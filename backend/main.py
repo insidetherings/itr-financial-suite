@@ -14,7 +14,7 @@ scheduler = BackgroundScheduler()
 with engine.begin() as conn:
     conn.execute(text("""
         CREATE TABLE IF NOT EXISTS invoices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY AUTOINCREMENT,
             client_name VARCHAR(255),
             total NUMERIC,
             status VARCHAR(20),
