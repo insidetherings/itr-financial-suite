@@ -69,3 +69,15 @@ def get_accounts(db: Session = Depends(get_db)):
 def get_transactions(db: Session = Depends(get_db)):
     transactions = db.query(Transaction).all()
     return transactions
+
+# ✅ TEMPORARY: route inspection endpoint
+@app.get("/routes")
+def list_routes():
+    from fastapi.routing import APIRoute
+    routes = []
+    for route in app.router.routes:
+        routes.append({
+            "path": route.path,
+            "methods": list(route.methods)
+        })
+    return routes
