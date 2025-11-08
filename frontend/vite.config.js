@@ -1,15 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
-// Vite configuration
 export default defineConfig({
   plugins: [react()],
-  root: '.',  // look for index.html in the same folder as this config
+  root: '.',               // current directory (frontend/)
   build: {
-    outDir: 'dist',  // build output folder
+    outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: './index.html', // explicitly tell Rollup where to start
+      input: resolve(__dirname, 'index.html'),   // absolute path for Render’s build env
     },
   },
 })
