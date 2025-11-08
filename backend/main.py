@@ -1,5 +1,6 @@
 # backend/main.py
 
+from backend.routes import invoices
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -14,6 +15,8 @@ from backend.models.transactions import Transaction
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.include_router(invoices.router)
 
 # --- CORS Middleware ---
 origins = [
