@@ -1,27 +1,32 @@
 # backend/main.py
 
-from backend.routes import invoices
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from backend.database import engine, SessionLocal, Base
+from sqlalchemy import text
 
-# ✅ Import your models explicitly (so Base knows about them)
+from backend.database import engine, SessionLocal, Base
+from backend.models import accounts, invoices, transactions
 from backend.models.accounts import Account
 from backend.models.invoices import Invoice
 from backend.models.transactions import Transaction
-
-# ✅ Create all database tables at startup
-Base.metadata.create_all(bind=engine)
+from backend.routes import invoices as invoice_routes
 
 app = FastAPI()
 
-app.include_router(invoices.router)
+# --- TEMP FIX: Drop old invoices table if exists ---
+# This ensures the due_date column gets added correctly.
+with engine.connect() as conn:
+    conn.execute(text("DROP TABLE IF EXISTS invoices CASCADE;"))
+    conn.commit()
+
+# --- Create all database tables ---
+Base.metadata.create_all(bind=engine)
 
 # --- CORS Middleware ---
 origins = [
     "https://itr-financial-frontend.onrender.com",  # Your Render frontend
-    "http://localhost:5173"  # For local development
+    "http://localhost:5173"  # Local development
 ]
 
 app.add_middleware(
@@ -31,49 +36,47 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# -----------------------
+# ---------------------------------------------------
 
-# Dependency: provide a DB session per request
+# --- Dependency: provide DB session per request ---
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+# ---------------------------------------------------
 
 
+# --- Base Routes ---
 @app.get("/")
 def read_root():
     return {"message": "Inside the Rings Financial Suite backend is running"}
 
-
-# ✅ Health check endpoint for frontend connectivity
 @app.get("/health")
 def health_check():
     return {"message": "Inside the Rings Financial Suite backend is running"}
 
-
-# ✅ Get all invoices
-@app.get("/invoices")
-def get_invoices(db: Session = Depends(get_db)):
-    invoices = db.query(Invoice).all()
-    return invoices
+# ---------------------------------------------------
 
 
-# ✅ Get all accounts (for Phase 1 verification)
+# --- Verification Routes (Phase 1) ---
 @app.get("/accounts")
 def get_accounts(db: Session = Depends(get_db)):
-    accounts = db.query(Account).all()
-    return accounts
+    return db.query(Account).all()
 
-
-# ✅ Get all transactions (for Phase 1 verification)
 @app.get("/transactions")
 def get_transactions(db: Session = Depends(get_db)):
-    transactions = db.query(Transaction).all()
-    return transactions
+    return db.query(Transaction).all()
+# ---------------------------------------------------
 
-# ✅ TEMPORARY: route inspection endpoint
+
+# --- Include Invoice Router (Phase 2) ---
+app.include_router(invoice_routes.router)
+# ---------------------------------------------------
+
+
+# --- Route Inspector (for debugging) ---
 @app.get("/routes")
 def list_routes():
     from fastapi.routing import APIRoute
@@ -84,3 +87,4 @@ def list_routes():
             "methods": list(route.methods)
         })
     return routes
+# ---------------------------------------------------
