@@ -1,6 +1,7 @@
 # backend/main.py
 
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from backend import models
 from backend.database import engine, SessionLocal
@@ -9,6 +10,21 @@ from backend.database import engine, SessionLocal
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# --- CORS Middleware ---
+origins = [
+    "https://itr-financial-frontend.onrender.com",  # Your Render frontend
+    "http://localhost:5173"  # For local development
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# -----------------------
 
 # Dependency: provide a DB session per request
 def get_db():
@@ -20,6 +36,11 @@ def get_db():
 
 @app.get("/")
 def read_root():
+    return {"message": "Inside the Rings Financial Suite backend is running"}
+
+# ✅ Add a health check endpoint for the frontend
+@app.get("/health")
+def health_check():
     return {"message": "Inside the Rings Financial Suite backend is running"}
 
 @app.get("/invoices")
