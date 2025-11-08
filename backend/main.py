@@ -11,22 +11,17 @@ from backend.models.accounts import Account
 from backend.models.invoices import Invoice
 from backend.models.transactions import Transaction
 from backend.routes import invoices as invoice_routes
+from backend.routes import accounts as account_routes
 
 app = FastAPI()
-
-# --- TEMP FIX: Drop old invoices table if exists ---
-# This ensures the due_date column gets added correctly.
-with engine.connect() as conn:
-    conn.execute(text("DROP TABLE IF EXISTS invoices CASCADE;"))
-    conn.commit()
 
 # --- Create all database tables ---
 Base.metadata.create_all(bind=engine)
 
 # --- CORS Middleware ---
 origins = [
-    "https://itr-financial-frontend.onrender.com",  # Your Render frontend
-    "http://localhost:5173"  # Local development
+    "https://itr-financial-frontend.onrender.com",
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
@@ -56,23 +51,12 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"message": "Inside the Rings Financial Suite backend is running"}
-
 # ---------------------------------------------------
 
 
-# --- Verification Routes (Phase 1) ---
-@app.get("/accounts")
-def get_accounts(db: Session = Depends(get_db)):
-    return db.query(Account).all()
-
-@app.get("/transactions")
-def get_transactions(db: Session = Depends(get_db)):
-    return db.query(Transaction).all()
-# ---------------------------------------------------
-
-
-# --- Include Invoice Router (Phase 2) ---
+# --- Include Routers ---
 app.include_router(invoice_routes.router)
+app.include_router(account_routes.router)
 # ---------------------------------------------------
 
 
