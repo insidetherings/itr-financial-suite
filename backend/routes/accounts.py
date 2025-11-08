@@ -1,6 +1,6 @@
 # backend/routes/accounts.py
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from backend.database import SessionLocal
 from backend.models.accounts import Account
@@ -17,9 +17,14 @@ def get_db():
 # -----------------------------------
 
 
-# ✅ CREATE Account
+# ✅ CREATE Account (works with browser or JSON body)
 @router.post("/")
-def create_account(name: str, type: str, balance: float = 0.0, db: Session = Depends(get_db)):
+def create_account(
+    name: str = Body(...),
+    type: str = Body(...),
+    balance: float = Body(0.0),
+    db: Session = Depends(get_db)
+):
     """
     Create a new account.
     Example types: 'Asset', 'Liability', 'Income', 'Expense'
@@ -27,6 +32,7 @@ def create_account(name: str, type: str, balance: float = 0.0, db: Session = Dep
     existing = db.query(Account).filter(Account.name == name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Account already exists")
+
     account = Account(name=name, type=type, balance=balance)
     db.add(account)
     db.commit()
@@ -51,7 +57,12 @@ def get_account(account_id: int, db: Session = Depends(get_db)):
 
 # ✅ UPDATE Account
 @router.put("/{account_id}")
-def update_account(account_id: int, name: str = None, balance: float = None, db: Session = Depends(get_db)):
+def update_account(
+    account_id: int,
+    name: str = Body(None),
+    balance: float = Body(None),
+    db: Session = Depends(get_db)
+):
     account = db.query(Account).filter(Account.id == account_id).first()
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
