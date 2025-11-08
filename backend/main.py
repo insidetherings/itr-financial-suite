@@ -5,6 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from backend import models
 from backend.database import engine, SessionLocal
+from backend.models import Account, Invoice, Transaction
+from backend.database import Base, engine
+
+Base.metadata.create_all(bind=engine)
+
 
 # Create all database tables at startup
 models.Base.metadata.create_all(bind=engine)
