@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Only add 'root' if your index.html is *not* directly in frontend
+// Vite configuration
 export default defineConfig({
   plugins: [react()],
-  root: '.',        // points to the folder containing index.html
+  root: '.',  // look for index.html in the same folder as this config
   build: {
-    outDir: 'dist',
+    outDir: 'dist',  // build output folder
+    emptyOutDir: true,
+    rollupOptions: {
+      input: './index.html', // explicitly tell Rollup where to start
+    },
   },
 })
