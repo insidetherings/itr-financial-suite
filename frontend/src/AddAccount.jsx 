@@ -1,85 +1,42 @@
-import { useState } from "react";
+// frontend/src/AddAccount.jsx
+import { useState } from 'react'
 
-function AddAccount() {
-  const [form, setForm] = useState({
-    name: "",
-    type: "Asset",
-    balance: 0
-  });
-  const [message, setMessage] = useState("");
-
-  const backendUrl = "https://itr-financial-backend.onrender.com/accounts/";
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+export default function AddAccount() {
+  const [name, setName] = useState('')
+  const [balance, setBalance] = useState('')
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(backendUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setMessage(`✅ Account "${data.name}" created successfully!`);
-        setForm({ name: "", type: "Asset", balance: 0 });
-      } else {
-        const err = await res.json();
-        setMessage(`❌ Error: ${err.detail}`);
-      }
-    } catch (error) {
-      setMessage("⚠️ Could not connect to backend.");
-    }
-  };
+    e.preventDefault()
+    await fetch(import.meta.env.VITE_API_URL + '/accounts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, balance: parseFloat(balance) })
+    })
+    alert('Account created successfully!')
+    setName('')
+    setBalance('')
+  }
 
   return (
-    <div style={{ maxWidth: "400px", margin: "40px auto", textAlign: "center" }}>
-      <h2>Add New Account</h2>
+    <div style={{ padding: '1rem' }}>
+      <h2>Add Account</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Account Name:</label><br />
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div style={{ marginTop: "10px" }}>
-          <label>Account Type:</label><br />
-          <select name="type" value={form.type} onChange={handleChange}>
-            <option>Asset</option>
-            <option>Liability</option>
-            <option>Income</option>
-            <option>Expense</option>
-          </select>
-        </div>
-        <div style={{ marginTop: "10px" }}>
-          <label>Balance:</label><br />
-          <input
-            type="number"
-            name="balance"
-            value={form.balance}
-            onChange={handleChange}
-            step="0.01"
-          />
-        </div>
-        <button style={{ marginTop: "15px" }} type="submit">
-          Add Account
-        </button>
+        <input
+          placeholder="Account Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Balance"
+          value={balance}
+          onChange={(e) => setBalance(e.target.value)}
+          required
+        />
+        <button type="submit">Create</button>
       </form>
-      {message && <p style={{ marginTop: "20px" }}>{message}</p>}
     </div>
-  );
+  )
 }
-
-export default AddAccount;
