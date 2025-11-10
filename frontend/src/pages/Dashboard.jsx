@@ -34,6 +34,18 @@ export default function Dashboard() {
 
       <DashboardChart />
       <QuickActions />
-    </div>
+   <img
+  src="/src/assets/itr-logo.png"
+  alt="Inside the Rings logo"
+  style={{
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    opacity: 0.1,
+    width: "120px",
+  }}
+/>
+ 
+</div>
   )
 }
